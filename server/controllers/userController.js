@@ -37,7 +37,11 @@ const registerUser = asyncHandler(async (req, res) => {
             connection.query("insert into users (name,email, password) values (?, ?, ?)", [name, email, hashPassword], (err, results) => {
                 if (err) throw err;
                 generateToken(res, results.insertId);
-                res.status(200).json({ message: 'User register successfully' });
+                const userInfo = {
+                    name,
+                    email
+                }
+                res.status(200).json(userInfo);
             })
         }
     });
@@ -67,7 +71,13 @@ const updateUserProfile = asyncHandler(async (req, res) => {
         (err, result) => {
             if (err) throw err;
             if (result.affectedRows > 0) {
-                res.status(200).json({ message: 'Profile updated successfully' });
+                connection.query('select * from users where id =?',
+                    [req.user.id], function (eror, resul) {
+                        if (eror) throw eror;
+                        res.status(200).json({ message: 'Profile updated successfully', name: resul[0].name, user: resul[0] })
+                    }
+                )
+                    ;
             } else {
                 res.status(400).json({ message: 'update profile error' });
             }

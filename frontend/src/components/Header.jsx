@@ -10,6 +10,8 @@ import { useNavigate } from 'react-router-dom';
 const Header = () => {
     const { userInfo } = useSelector(state => state.auth);
 
+    console.log(userInfo)
+
     const [logoutApiCall] = useLogoutMutation();
     const dispatch = useDispatch();
     const navigate = useNavigate();

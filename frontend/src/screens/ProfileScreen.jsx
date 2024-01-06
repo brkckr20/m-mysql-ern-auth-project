@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Form, Button, Row, Col } from 'react-bootstrap';
+import { Form, Button } from 'react-bootstrap';
 import FormContainer from '../components/FormContainer';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import Loader from '../components/Loader';
-import { useRegisterMutation } from '../slices/usersApiSlice';
 import { setCredentials } from '../slices/authSlice';
+import { useUpdateUserMutation } from '../slices/usersApiSlice';
 
 
-const RegisterScreen = () => {
+const ProfileScreen = () => {
     const [email, setEmail] = useState("");
     const [name, setName] = useState("");
     const [password, setPassword] = useState("");
@@ -19,8 +19,7 @@ const RegisterScreen = () => {
     const dispatch = useDispatch();
 
     const { userInfo } = useSelector(state => state.auth);
-    const [register, { isLoading }] = useRegisterMutation();
-
+    const [updateProfile, { isLoading }] = useUpdateUserMutation();
 
 
     const submitHandler = async (e) => {
@@ -29,25 +28,29 @@ const RegisterScreen = () => {
             toast.error("Passwords is not match")
         } else {
             try {
-                const res = await register({ name, email, password }).unwrap();
+                const res = await updateProfile({
+                    id: userInfo.id,
+                    name,
+                    email,
+                    password
+                }).unwrap();
                 dispatch(setCredentials({ ...res }))
-                navigate('/')
-            } catch (err) {
-                toast.error(err?.data?.message || err.error)
+                toast.success("Profile updated!")
+            } catch (error) {
+                console.log(error)
             }
         }
     }
 
     useEffect(() => {
-        if (userInfo) {
-            navigate("/")
-        }
-    }, [navigate, userInfo])
+        setName(userInfo.name);
+        setEmail(userInfo.email);
+    }, [userInfo.setName, userInfo.setEmail])
 
 
     return (
         <FormContainer>
-            <h1>Sign Up</h1>
+            <h1>Update Profile</h1>
             <Form onSubmit={submitHandler}>
                 <Form.Group className='my-2' controlId='name'>
                     <Form.Label>Name</Form.Label>
@@ -89,16 +92,11 @@ const RegisterScreen = () => {
                     >
                     </Form.Control>
                 </Form.Group>
+                <Button type='submit' variant='primary' className='mt-3'>Update</Button>
 
-                {isLoading && <Loader />} {/* not working */}
-
-                <Button type='submit' variant='primary' className='mt-3'>Sign Up</Button>
-                <Row className='py-3'>
-                    <Col>Already have a account? <Link to="/login">Login</Link></Col>
-                </Row>
             </Form>
         </FormContainer>
     )
 }
 
-export default RegisterScreen
+export default ProfileScreen
